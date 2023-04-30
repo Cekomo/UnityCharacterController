@@ -19,6 +19,7 @@ public class PlayerInput : MonoBehaviour
 
         if (jumpInput >= 0.5f)
             StartCoroutine(PermitJumping());
+        
         DetectDirection();
     }
     
@@ -38,6 +39,9 @@ public class PlayerInput : MonoBehaviour
             case { x: < -0.5f }:
                 Direction = PlayerDirections.Left;
                 break;
+            default:
+                Direction = PlayerDirections.Idle;
+                break;
         }
     }
 
@@ -53,6 +57,7 @@ public class PlayerInput : MonoBehaviour
 
 public enum PlayerDirections
 {
+    Idle,
     Up,
     Down,
     Left, 

@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -30,7 +29,12 @@ public class PlayerController : MonoBehaviour
     private void Move()
     {
         var movementInput = PlayerInput.Direction == PlayerDirections.Right ? 1 : -1;
-        _rbPlayer.velocity += Vector2.right * (SPEED * Time.deltaTime * movementInput);
+        var previousVelocity = _rbPlayer.velocity;
+        var speedAddition = Vector2.right * (SPEED * Time.deltaTime * movementInput);
+
+        if (Mathf.Abs(previousVelocity.x) > Mathf.Abs(previousVelocity.x + speedAddition.x) || 
+            Mathf.Abs(_rbPlayer.velocity.x) < 7.5f) 
+            _rbPlayer.velocity += speedAddition;
     }
     
     private void Jump()
