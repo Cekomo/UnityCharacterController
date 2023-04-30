@@ -6,10 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     private Rigidbody2D _rbPlayer;
     
-    [SerializeField] private InputActionReference movement, jump;
-    private Vector2 movementInput;
-    private float jumpInput;
-    
     private const float JUMP_FORCE = 7f;
     private const float SPEED = 25f;
     
@@ -21,32 +17,28 @@ public class PlayerController : MonoBehaviour
         _rbPlayer = GetComponent<Rigidbody2D>();
         _boxRenderer = GetComponent<Renderer>();
     }
-    
-    private void Update()
-    {
-        movementInput = movement.action.ReadValue<Vector2>();
-        jumpInput = jump.action.ReadValue<float>();
-    }
 
     private void FixedUpdate()
     {
-        if (jumpInput > 0.5f)
+        if (PlayerInput.CanJump)
             Jump();
             
-        if (Mathf.Abs(movementInput.x) < 0.1f) return;
-
-        Move();
+        if (PlayerInput.Direction is PlayerDirections.Left or PlayerDirections.Right)
+            Move();
     }
 
     private void Move()
     {
-        _rbPlayer.velocity += Vector2.right * (SPEED * Time.deltaTime * movementInput.x);
+        var movementInput = PlayerInput.Direction == PlayerDirections.Right ? 1 : -1;
+        _rbPlayer.velocity += Vector2.right * (SPEED * Time.deltaTime * movementInput);
     }
     
     private void Jump()
     {
         if (IsGrounded())
             _rbPlayer.AddForce(Vector2.up * JUMP_FORCE, ForceMode2D.Impulse);
+
+        PlayerInput.CanJump = false;
     }
 
     private bool IsGrounded()
