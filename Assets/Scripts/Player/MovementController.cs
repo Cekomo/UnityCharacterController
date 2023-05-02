@@ -32,6 +32,7 @@ namespace Player
         private void FixedUpdate()
         {
             Move();
+            // print(_rbPlayer.velocity.x);
         }
 
         // create a timer function that starts from zero with movement press and reaches the latest point 
@@ -44,15 +45,26 @@ namespace Player
             if (horizontalVector.x == 0f) timer = 0f;
             var speedDiff = Vector2.right * (speed * Time.deltaTime * horizontalVector);
             var currentCurve = movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(timer, horizontalVector));
+            print(currentCurve);
 
-            if (horizontalVector.x == 0f || !IsSpeedDiffBelowLimit(speedDiff)) return;
+            if (!IsSpeedDiffBelowLimit(speedDiff)) return;
+            
+            var currentVelocity = _rbPlayer.velocity;
+            if (horizontalVector.x == 0f && IsGrounded())
+            {
+                _rbPlayer.velocity = new Vector2(currentVelocity.x * 0.6f, currentVelocity.y);
+                return;
+            }
 
             if (isCurveIncluded)
             {
-                _rbPlayer.velocity += speedDiff * currentCurve;
+                _rbPlayer.velocity = currentVelocity + speedDiff * currentCurve;
             }
             else
-                _rbPlayer.velocity += speedDiff;
+            {
+                _rbPlayer.velocity = currentVelocity + speedDiff;
+            }
+                
         }
         
         private void Jump(InputAction.CallbackContext obj)
