@@ -37,20 +37,19 @@ namespace Player
         // create a timer function that starts from zero with movement press and reaches the latest point 
         // where the curve at max, timer should not go further until the key is released, 
         // timer will start from zero, goes until x (btw 0 and 1) as far as keypress and concludes at 1 when released
-        
+
         private void Move()
         {
             var horizontalVector = movement.ReadValue<Vector2>();
             if (horizontalVector.x == 0f) timer = 0f;
             var speedDiff = Vector2.right * (speed * Time.deltaTime * horizontalVector);
-            var currentCurve = movementCurves.movementCurve[0].Evaluate(timer);
-            timer += Time.deltaTime;
+            var currentCurve = movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(timer, horizontalVector));
+
             if (horizontalVector.x == 0f || !IsSpeedDiffBelowLimit(speedDiff)) return;
 
             if (isCurveIncluded)
             {
                 _rbPlayer.velocity += speedDiff * currentCurve;
-                print(timer);
             }
             else
                 _rbPlayer.velocity += speedDiff;
@@ -76,6 +75,15 @@ namespace Player
 
             return Mathf.Abs(previousVelocity.x) > Mathf.Abs(previousVelocity.x + speedDifference.x) || 
                    Mathf.Abs(_rbPlayer.velocity.x) < 7.5f;
+        }
+
+        private float CurveElapsedTime(float curveTimer, Vector2 horizontalVector)
+        {
+            var lastKeyTime = movementCurves.movementCurve[0].keys[2].time;
+            if (curveTimer < lastKeyTime || horizontalVector.x == 0f)
+                curveTimer += Time.deltaTime;
+
+            return curveTimer;
         }
         
         private void OnEnable()
