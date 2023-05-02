@@ -9,6 +9,8 @@ namespace Player
 {
     public class MovementController : MonoBehaviour
     {
+        public MovementCurve movementCurves;
+        
         private PlayerInputActions _playerInputActions;
         private InputAction movement;
 
@@ -18,7 +20,9 @@ namespace Player
 
         [SerializeField] private float jumpForce;
         [SerializeField] private float speed;
-        
+
+        public bool isCurveIncluded;
+        private float timer;
 
         private void Awake()
         {
@@ -30,14 +34,26 @@ namespace Player
             Move();
         }
 
+        // create a timer function that starts from zero with movement press and reaches the latest point 
+        // where the curve at max, timer should not go further until the key is released, 
+        // timer will start from zero, goes until x (btw 0 and 1) as far as keypress and concludes at 1 when released
+        
         private void Move()
         {
             var horizontalVector = movement.ReadValue<Vector2>();
+            if (horizontalVector.x == 0f) timer = 0f;
             var speedDiff = Vector2.right * (speed * Time.deltaTime * horizontalVector);
-            
+            var currentCurve = movementCurves.movementCurve[0].Evaluate(timer);
+            timer += Time.deltaTime;
             if (horizontalVector.x == 0f || !IsSpeedDiffBelowLimit(speedDiff)) return;
-           
-            _rbPlayer.velocity += speedDiff;
+
+            if (isCurveIncluded)
+            {
+                _rbPlayer.velocity += speedDiff * currentCurve;
+                print(timer);
+            }
+            else
+                _rbPlayer.velocity += speedDiff;
         }
         
         private void Jump(InputAction.CallbackContext obj)
