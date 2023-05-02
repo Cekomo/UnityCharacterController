@@ -17,7 +17,7 @@ public class PlayerInput : MonoBehaviour
         movementInput = movement.action.ReadValue<Vector2>();
         jumpInput = jump.action.ReadValue<float>();
 
-        if (jumpInput >= 0.5f)
+        if (jumpInput >= 0.5f && !CanJump)
             StartCoroutine(PermitJumping());
         
         DetectDirection();
@@ -61,5 +61,5 @@ public enum PlayerDirections
     Up,
     Down,
     Left, 
-    Right,
+    Right
 }

@@ -5,16 +5,16 @@ public class PlayerController : MonoBehaviour
 {
     private Rigidbody2D _rbPlayer;
     
-    private const float JUMP_FORCE = 7f;
-    private const float SPEED = 25f;
+    [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private float speed = 25f;
     
     [SerializeField] private LayerMask groundMask;
-    private Renderer _boxRenderer;
+    private BoxCollider2D _boxCollider;
     
     private void Start()
     {
         _rbPlayer = GetComponent<Rigidbody2D>();
-        _boxRenderer = GetComponent<Renderer>();
+        _boxCollider = GetComponent<BoxCollider2D>();
     }
 
     private void FixedUpdate()
@@ -29,26 +29,36 @@ public class PlayerController : MonoBehaviour
     private void Move()
     {
         var movementInput = PlayerInput.Direction == PlayerDirections.Right ? 1 : -1;
-        var previousVelocity = _rbPlayer.velocity;
-        var speedAddition = Vector2.right * (SPEED * Time.deltaTime * movementInput);
+        var speedDiff = Vector2.right * (speed * Time.deltaTime * movementInput);
 
-        if (Mathf.Abs(previousVelocity.x) > Mathf.Abs(previousVelocity.x + speedAddition.x) || 
-            Mathf.Abs(_rbPlayer.velocity.x) < 7.5f) 
-            _rbPlayer.velocity += speedAddition;
+        if (IsSpeedDiffBelowLimit(speedDiff)) 
+            _rbPlayer.velocity += speedDiff;
     }
     
     private void Jump()
     {
         if (IsGrounded())
-            _rbPlayer.AddForce(Vector2.up * JUMP_FORCE, ForceMode2D.Impulse);
-
+        {
+            print("ping");
+            _rbPlayer.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        }
+        
         PlayerInput.CanJump = false;
     }
 
     private bool IsGrounded()
     {
-        var raycastHit = Physics2D.BoxCast(transform.position, _boxRenderer.bounds.size, 
+        var raycastHit = Physics2D.BoxCast(transform.position, _boxCollider.bounds.size, 
             0f, -Vector2.up, 0.1f, groundMask);
+        
         return !ReferenceEquals(raycastHit.collider, null);
+    }
+
+    private bool IsSpeedDiffBelowLimit(Vector2 speedDifference)
+    {
+        var previousVelocity = _rbPlayer.velocity;
+
+        return Mathf.Abs(previousVelocity.x) > Mathf.Abs(previousVelocity.x + speedDifference.x) || 
+               Mathf.Abs(_rbPlayer.velocity.x) < 7.5f;
     }
 }
