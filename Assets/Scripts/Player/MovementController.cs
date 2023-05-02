@@ -33,9 +33,11 @@ namespace Player
         private void Move()
         {
             var horizontalVector = movement.ReadValue<Vector2>();
-            if (horizontalVector.x == 0f) return;
+            var speedDiff = Vector2.right * (speed * Time.deltaTime * horizontalVector);
             
-            _rbPlayer.velocity += Vector2.right * horizontalVector * (speed * Time.deltaTime);
+            if (horizontalVector.x == 0f || !IsSpeedDiffBelowLimit(speedDiff)) return;
+           
+            _rbPlayer.velocity += speedDiff;
         }
         
         private void Jump(InputAction.CallbackContext obj)
@@ -50,6 +52,14 @@ namespace Player
                 0f, -Vector2.up, 0.1f, groundMask);
         
             return !ReferenceEquals(raycastHit.collider, null);
+        }
+        
+        private bool IsSpeedDiffBelowLimit(Vector2 speedDifference)
+        {
+            var previousVelocity = _rbPlayer.velocity;
+
+            return Mathf.Abs(previousVelocity.x) > Mathf.Abs(previousVelocity.x + speedDifference.x) || 
+                   Mathf.Abs(_rbPlayer.velocity.x) < 7.5f;
         }
         
         private void OnEnable()
@@ -67,47 +77,3 @@ namespace Player
         }
     }
 }
-
-/*
- * public class MovementController : MonoBehaviour
-    {
-        private PlayerInputDefault _playerControls;
-
-        private Rigidbody2D _rbPlayer => GetComponent<Rigidbody2D>();
-
-        private void Awake()
-        {
-            _playerControls = new PlayerInputDefault();
-        }
-
-        private void Start()
-        {
-            _playerControls.Player.Move.performed += Move;
-        }
-
-        private void Move(InputAction.CallbackContext context)
-        {
-            var horizontalVector = context.ReadValue<Vector2>();
-            _rbPlayer.velocity += Vector2.right * horizontalVector * 10f;
-        }
-
-        private void OnEnable()
-        {
-            _playerControls.Enable();
-        }
-
-        private void OnDisable()
-        {
-            _playerControls.Disable();
-        }
-    }
- */
-
-/*
- * private Rigidbody2D _rbPlayer => GetComponent<Rigidbody2D>();
-        
-        [SerializeField] private float jumpForce = 7f;
-        [SerializeField] private float speed = 25f;
-        
-        [SerializeField] private LayerMask groundMask;
- */
