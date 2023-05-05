@@ -359,7 +359,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1097684373}
   - component: {fileID: 1097684372}
-  - component: {fileID: 1097684381}
+  - component: {fileID: 1097684383}
   - component: {fileID: 1097684382}
   - component: {fileID: 1097684374}
   - component: {fileID: 1097684380}
@@ -453,7 +453,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 5
+  m_GravityScale: 10
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
@@ -515,25 +515,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &1097684381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1097684371}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3466b616abb1b58418bbdc3db487c7df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementCurves: {fileID: 1097684382}
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 8
-  jumpForce: 20
-  speed: 250
-  isCurveIncluded: 1
 --- !u!114 &1097684382
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -547,6 +528,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementCurve:
+  - serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.0013656616
+      value: 0.0047302246
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.9278656
+      value: 1.0000012
+      inSlope: 0.0000008521601
+      outSlope: 0.0000008521601
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.6994536
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.95
+      value: 1
+      inSlope: -0.00000019868216
+      outSlope: -0.00000019868216
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   - serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -629,6 +651,24 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
+--- !u!114 &1097684383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1097684371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66b3fbd5fd4d1a44293bcc5031c89ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 8
+  jumpForce: 0
+  speed: 500
+  speedLimit: 10
 --- !u!1 &1206454349
 GameObject:
   m_ObjectHideFlags: 0

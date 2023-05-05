@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -32,7 +28,6 @@ namespace Player
         private void FixedUpdate()
         {
             Move();
-            // print(_rbPlayer.velocity.x);
         }
 
         // create a timer function that starts from zero with movement press and reaches the latest point 
@@ -42,20 +37,13 @@ namespace Player
         private void Move()
         {
             var horizontalVector = movement.ReadValue<Vector2>();
-            if (horizontalVector.x == 0f) timer = 0f;
+            if (timer >= 1f) timer = 0f;
             var speedDiff = Vector2.right * (speed * Time.deltaTime * horizontalVector);
-            var currentCurve = movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(timer, horizontalVector));
-            print(currentCurve);
+            var currentCurve = movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref timer, horizontalVector));
 
             if (!IsSpeedDiffBelowLimit(speedDiff)) return;
-            
-            var currentVelocity = _rbPlayer.velocity;
-            if (horizontalVector.x == 0f && IsGrounded())
-            {
-                _rbPlayer.velocity = new Vector2(currentVelocity.x * 0.6f, currentVelocity.y);
-                return;
-            }
 
+            var currentVelocity = _rbPlayer.velocity;
             if (isCurveIncluded)
             {
                 _rbPlayer.velocity = currentVelocity + speedDiff * currentCurve;
@@ -89,12 +77,12 @@ namespace Player
                    Mathf.Abs(_rbPlayer.velocity.x) < 7.5f;
         }
 
-        private float CurveElapsedTime(float curveTimer, Vector2 horizontalVector)
+        private float CurveElapsedTime(ref float curveTimer, Vector2 horizontalVector)
         {
             var lastKeyTime = movementCurves.movementCurve[0].keys[2].time;
             if (curveTimer < lastKeyTime || horizontalVector.x == 0f)
                 curveTimer += Time.deltaTime;
-
+       
             return curveTimer;
         }
         
