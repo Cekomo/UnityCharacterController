@@ -7,8 +7,6 @@ namespace Player
     {
         private MovementCurve movementCurves;
 
-        public static HorizontalDirection HorizontalDirection;
-        
         private PlayerInputActions _playerInputActions;
         private InputAction movement;
         private HorizontalDirection oldPlayerDirection;
@@ -19,8 +17,7 @@ namespace Player
         
         [SerializeField] private float jumpForce;
         [SerializeField] private float speed;
-        [SerializeField] private float speedLimit;
-        
+
         private float _curveTimer;
         private const float CURVE_PERIOD = 1f;
         
@@ -38,13 +35,25 @@ namespace Player
         private void Move()
         {
             var movementVector = movement.ReadValue<Vector2>();
-            
             var speedDirection = Vector2.right * movementVector * (speed * Time.deltaTime);
             var currentCurve = 
                 movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, movementVector.x));
+            
+            _rbPlayer.velocity = new Vector2(speedDirection.x * currentCurve, _rbPlayer.velocity.y);
+        }
+
+        private void Jump(InputAction.CallbackContext obj)
+        {
+            if (IsGrounded())
+                _rbPlayer.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        }
         
-            _rbPlayer.velocity = speedDirection * currentCurve;
-            print(_rbPlayer.velocity);
+        private bool IsGrounded()
+        {
+            var raycastHit = Physics2D.BoxCast(transform.position, _boxCollider.bounds.size, 
+                0f, -Vector2.up, 0.1f, groundMask);
+            
+            return !ReferenceEquals(raycastHit.collider, null);
         }
         
         private float CurveElapsedTime(ref float curveTimer, float horizontalVector)
@@ -85,6 +94,9 @@ namespace Player
         {
             movement = _playerInputActions.Player.Move;
             movement.Enable();
+            
+            _playerInputActions.Player.Jump.performed += Jump;
+            _playerInputActions.Player.Jump.Enable();
         }
 
         private void OnDisable()
