@@ -19,7 +19,9 @@ namespace Player
         [SerializeField] private float speed;
 
         private float _curveTimer;
+        private float _lastKeyTime;
         private const float CURVE_PERIOD = 1f;
+        private float _directionFloat;
         
         private void Awake()
         {
@@ -39,7 +41,16 @@ namespace Player
             var currentCurve = 
                 movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, movementVector.x));
             
+            if (DetectPlayerDirection() == HorizontalDirection.Left)
+                _directionFloat = -1;
+            else if (DetectPlayerDirection() == HorizontalDirection.Right)
+                _directionFloat = 1;
+            
+            if (_curveTimer >= _lastKeyTime && _curveTimer < CURVE_PERIOD && movementVector.x == 0f)
+                speedDirection = Vector2.right * (speed * Time.deltaTime * _directionFloat);
+            
             _rbPlayer.velocity = new Vector2(speedDirection.x * currentCurve, _rbPlayer.velocity.y);
+            print(_rbPlayer.velocity.x);
         }
 
         private void Jump(InputAction.CallbackContext obj)
@@ -60,10 +71,10 @@ namespace Player
         {
             // if curve-ending slowing process changes, keyCount should be changed
             var keyCount = movementCurves.movementCurve[0].keys.Length;
-            var lastKeyTime = movementCurves.movementCurve[0].keys[keyCount-2].time;
+            _lastKeyTime = movementCurves.movementCurve[0].keys[keyCount-2].time;
             
-            if ((curveTimer < lastKeyTime && horizontalVector != 0f) ||
-                (curveTimer >= lastKeyTime && horizontalVector == 0f))
+            if ((curveTimer < _lastKeyTime && horizontalVector != 0f) ||
+                (curveTimer >= _lastKeyTime && horizontalVector == 0f))
                 curveTimer += Time.deltaTime;
             
             if (curveTimer >= CURVE_PERIOD || 
