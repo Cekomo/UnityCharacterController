@@ -22,6 +22,7 @@ namespace Player
         [SerializeField] private float speedLimit;
         
         private float _curveTimer;
+        private const float CURVE_PERIOD = 1f;
         
         private void Awake()
         {
@@ -36,27 +37,32 @@ namespace Player
 
         private void Move()
         {
-            var horizontalVector = movement.ReadValue<Vector2>();
+            var movementVector = movement.ReadValue<Vector2>();
             
-            var speedDirection = Vector2.right * horizontalVector * (speed * Time.deltaTime);
+            var speedDirection = Vector2.right * movementVector * (speed * Time.deltaTime);
             var currentCurve = 
-                movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, horizontalVector));
+                movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, movementVector.x));
         
             _rbPlayer.velocity = speedDirection * currentCurve;
+            print(_rbPlayer.velocity);
         }
         
-        private float CurveElapsedTime(ref float curveTimer, Vector2 horizontalVector)
+        private float CurveElapsedTime(ref float curveTimer, float horizontalVector)
         {
-            var lastKeyTime = movementCurves.movementCurve[0].keys[2].time;
-            if ((curveTimer < lastKeyTime && horizontalVector.x != 0f) ||
-                (curveTimer >= lastKeyTime && horizontalVector.x == 0f))
+            // if curve-ending slowing process changes, keyCount should be changed
+            var keyCount = movementCurves.movementCurve[0].keys.Length;
+            var lastKeyTime = movementCurves.movementCurve[0].keys[keyCount-2].time;
+            
+            if ((curveTimer < lastKeyTime && horizontalVector != 0f) ||
+                (curveTimer >= lastKeyTime && horizontalVector == 0f))
                 curveTimer += Time.deltaTime;
             
-            if (curveTimer >= 1f || (DetectPlayerDirection() != oldPlayerDirection && horizontalVector.x != 0f)) 
+            if (curveTimer >= CURVE_PERIOD || 
+                (DetectPlayerDirection() != oldPlayerDirection && horizontalVector != 0f)) 
                 curveTimer = 0f;
             
             oldPlayerDirection = DetectPlayerDirection();
-            print(curveTimer);
+            
             return curveTimer;
         }
 
