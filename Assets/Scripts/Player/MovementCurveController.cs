@@ -40,6 +40,9 @@ namespace Player
             var speedDirection = Vector2.right * movementVector * (speed * Time.deltaTime);
             var currentCurve = 
                 movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, movementVector.x));
+
+            if (_curveTimer < _lastKeyTime && movementVector.x == 0f)
+                _curveTimer = _lastKeyTime;
             
             if (DetectPlayerDirection() == HorizontalDirection.Left)
                 _directionFloat = -1;
@@ -77,7 +80,7 @@ namespace Player
                 (curveTimer >= _lastKeyTime && horizontalVector == 0f))
                 curveTimer += Time.deltaTime;
             
-            if (curveTimer >= CURVE_PERIOD || 
+            if ((curveTimer >= CURVE_PERIOD && horizontalVector != 0f) || 
                 (DetectPlayerDirection() != oldPlayerDirection && horizontalVector != 0f)) 
                 curveTimer = 0f;
             
