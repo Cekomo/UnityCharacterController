@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,10 +20,13 @@ namespace Player
         [SerializeField] private float jumpForce;
         [SerializeField] private float speed;
 
-        private float _curveTimer;
+        private float _movementCurveTimer;
         private float _lastKeyTime;
-        private const float CURVE_PERIOD = 1f;
+        private const float MOVE_CURVE_PERIOD = 1f;
         private float _directionFloat;
+        
+        private float _jumpingCurveTimer;
+        private float _jumpCurvePeriod;
         
         private void Awake()
         {
@@ -39,27 +44,32 @@ namespace Player
             var movementVector = movement.ReadValue<Vector2>();
             var speedDirection = Vector2.right * movementVector * (speed * Time.deltaTime);
             var currentCurve = 
-                movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _curveTimer, movementVector.x));
+                movementCurves.movementCurve[0].Evaluate(CurveElapsedTime(ref _movementCurveTimer, movementVector.x));
 
-            if (_curveTimer < _lastKeyTime && movementVector.x == 0f)
-                _curveTimer = _lastKeyTime;
+            if (_movementCurveTimer < _lastKeyTime && movementVector.x == 0f)
+                _movementCurveTimer = _lastKeyTime;
             
             if (DetectPlayerDirection() == HorizontalDirection.Left)
                 _directionFloat = -1;
             else if (DetectPlayerDirection() == HorizontalDirection.Right)
                 _directionFloat = 1;
             
-            if (_curveTimer >= _lastKeyTime && _curveTimer < CURVE_PERIOD && movementVector.x == 0f)
+            if (_movementCurveTimer >= _lastKeyTime && _movementCurveTimer < MOVE_CURVE_PERIOD && movementVector.x == 0f)
                 speedDirection = Vector2.right * (speed * Time.deltaTime * _directionFloat);
             
             _rbPlayer.velocity = new Vector2(speedDirection.x * currentCurve, _rbPlayer.velocity.y);
-            print(_rbPlayer.velocity.x);
         }
 
         private void Jump(InputAction.CallbackContext obj)
         {
-            if (IsGrounded())
-                _rbPlayer.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            if (!IsGrounded()) return;
+      
+            var currentCurve = movementCurves.movementCurve[5];
+            
+            StartCoroutine(JumpUsingCurve(currentCurve));
+
+            // _rbPlayer.velocity += Vector2.up * jumpForce;
+            // _rbPlayer.velocity += Vector2.up * jumpForce * Time.deltaTime * 500;
         }
         
         private bool IsGrounded()
@@ -80,7 +90,7 @@ namespace Player
                 (curveTimer >= _lastKeyTime && horizontalVector == 0f))
                 curveTimer += Time.deltaTime;
             
-            if ((curveTimer >= CURVE_PERIOD && horizontalVector != 0f) || 
+            if ((curveTimer >= MOVE_CURVE_PERIOD && horizontalVector != 0f) || 
                 (DetectPlayerDirection() != oldPlayerDirection && horizontalVector != 0f)) 
                 curveTimer = 0f;
             
@@ -101,6 +111,18 @@ namespace Player
                     return HorizontalDirection.Left;
                 default:
                     return HorizontalDirection.Idle;
+            }
+        }
+
+        private IEnumerator JumpUsingCurve(AnimationCurve currentCurve)
+        {
+            _jumpingCurveTimer = 0f;
+            _jumpCurvePeriod = currentCurve.keys[^1].time;
+            while (_jumpingCurveTimer < _jumpCurvePeriod)
+            {
+                _rbPlayer.velocity += Vector2.up * (currentCurve.Evaluate(_jumpingCurveTimer) * jumpForce) / 100;
+                _jumpingCurveTimer += Time.deltaTime;
+                yield return null;
             }
         }
         
